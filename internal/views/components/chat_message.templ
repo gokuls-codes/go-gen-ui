@@ -1,0 +1,18 @@
+package components
+
+templ ChatMessage(message string, isUser bool) {
+	<div
+		class={
+			"w-fit max-w-md px-4 py-2 rounded-lg text-sm shadow-sm whitespace-pre-wrap leading-relaxed",
+			templ.KV("ml-auto bg-primary text-primary-foreground rounded-br-none", isUser),
+			templ.KV("mr-auto bg-card text-card-foreground border border-border rounded-bl-none", !isUser),
+		}
+	>
+		{ message }
+	</div>
+}
+
+templ ChatExchange(userMessage, aiResponse string) {
+	@ChatMessage(userMessage, true)
+	@ChatMessage(aiResponse, false)
+}
