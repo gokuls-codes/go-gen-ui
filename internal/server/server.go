@@ -27,6 +27,7 @@ func (s *Server) Start() error {
 
 	e.Use(middleware.RequestLogger())
 	e.Use(middleware.Recover())
+	e.Static("/static", "static")
 
 	e.GET("/", func(c *echo.Context) error {
 		return utils.Render(c, http.StatusOK, pages.Index())

@@ -40,7 +40,7 @@ func Index() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"max-w-2xl mx-auto p-6\"><h1 class=\"text-3xl font-bold mb-4\">Gen UI Playground</h1><div id=\"result\" class=\"p-4 bg-white rounded border my-4\">Click the button to test HTMX.</div><button hx-get=\"/ping\" hx-target=\"#result\" class=\"bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700\">Ping with HTMX</button></main>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"max-w-2xl mx-auto p-6\"><h1 class=\"text-3xl font-bold mb-4\">Gen UI Playground</h1><div id=\"result\" class=\"p-4 bg-card text-card-foreground rounded border border-border my-4\">Click the button to test HTMX.</div><button hx-get=\"/ping\" hx-target=\"#result\" class=\"bg-primary text-primary-foreground px-4 py-2 rounded hover:opacity-90\">Ping with HTMX</button></main>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
