@@ -4,7 +4,7 @@ import "github.com/gokuls-codes/go-gen-ui/internal/views"
 
 templ Index(threadId string) {
     @views.Base("Gen UI Playground") {
-        <main class="max-w-2xl mx-auto p-6">
+        <main class="max-w-2xl mx-auto p-6 flex flex-col h-screen">
             <h1 class="text-3xl font-bold mb-4">Gen UI Playground</h1>
             <div id="chat-messages" class="flex-1 overflow-y-auto py-6 space-y-4">
                 <div class="bg-muted/50 border border-border p-4 rounded-lg text-sm text-muted-foreground">
@@ -14,6 +14,7 @@ templ Index(threadId string) {
                 </div>
             </div>
             <form 
+                id="chat-form"
                 hx-post="/chat" 
                 hx-target="#chat-messages" 
                 hx-swap="beforeend"
@@ -29,8 +30,9 @@ templ Index(threadId string) {
                     class="flex-1 bg-card border border-input rounded-md px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 />
                 <button 
+                    id="send-btn"
                     type="submit" 
-                    class="bg-primary text-primary-foreground hover:bg-primary/90 px-5 py-2.5 rounded-md text-sm font-medium transition-colors">
+                    class="bg-primary text-primary-foreground hover:bg-primary/90 px-5 py-2.5 rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                     Send
                 </button>
             </form>

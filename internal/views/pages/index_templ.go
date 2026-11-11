@@ -40,20 +40,20 @@ func Index(threadId string) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"max-w-2xl mx-auto p-6\"><h1 class=\"text-3xl font-bold mb-4\">Gen UI Playground</h1><div id=\"chat-messages\" class=\"flex-1 overflow-y-auto py-6 space-y-4\"><div class=\"bg-muted/50 border border-border p-4 rounded-lg text-sm text-muted-foreground\">Try asking:  <span class=\"text-foreground font-medium\">\"What's the weather in Tokyo?\"</span> or  <span class=\"text-foreground font-medium\">\"Show me Apple's stock summary\"</span>.</div></div><form hx-post=\"/chat\" hx-target=\"#chat-messages\" hx-swap=\"beforeend\" hx-on::after-request=\"this.reset()\" class=\"pt-4 border-t border-border flex gap-3\"><input type=\"hidden\" name=\"thread_id\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"max-w-2xl mx-auto p-6 flex flex-col h-screen\"><h1 class=\"text-3xl font-bold mb-4\">Gen UI Playground</h1><div id=\"chat-messages\" class=\"flex-1 overflow-y-auto py-6 space-y-4\"><div class=\"bg-muted/50 border border-border p-4 rounded-lg text-sm text-muted-foreground\">Try asking:  <span class=\"text-foreground font-medium\">\"What's the weather in Tokyo?\"</span> or  <span class=\"text-foreground font-medium\">\"Show me Apple's stock summary\"</span>.</div></div><form id=\"chat-form\" hx-post=\"/chat\" hx-target=\"#chat-messages\" hx-swap=\"beforeend\" hx-on::after-request=\"this.reset()\" class=\"pt-4 border-t border-border flex gap-3\"><input type=\"hidden\" name=\"thread_id\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templruntime.NewAttributeExpression(threadId).Resolve(ctx)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/pages/index.templ`, Line: 22, Col: 70}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/pages/index.templ`, Line: 23, Col: 70}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var3)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\"> <input type=\"text\" name=\"message\" placeholder=\"Ask Gemini to generate something...\" required autocomplete=\"off\" class=\"flex-1 bg-card border border-input rounded-md px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring\"> <button type=\"submit\" class=\"bg-primary text-primary-foreground hover:bg-primary/90 px-5 py-2.5 rounded-md text-sm font-medium transition-colors\">Send</button></form></main>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\"> <input type=\"text\" name=\"message\" placeholder=\"Ask Gemini to generate something...\" required autocomplete=\"off\" class=\"flex-1 bg-card border border-input rounded-md px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring\"> <button id=\"send-btn\" type=\"submit\" class=\"bg-primary text-primary-foreground hover:bg-primary/90 px-5 py-2.5 rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed\">Send</button></form></main>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

@@ -1,5 +1,7 @@
 package components
 
+import "fmt"
+
 templ ChatMessage(message string, isUser bool) {
 	<div
 		class={
@@ -15,4 +17,18 @@ templ ChatMessage(message string, isUser bool) {
 templ ChatExchange(userMessage, aiResponse string) {
 	@ChatMessage(userMessage, true)
 	@ChatMessage(aiResponse, false)
+}
+
+templ ChatMessageStream(userMessage, msgId, threadId string) {
+	@ChatMessage(userMessage, true)
+
+	<div
+		hx-ext="sse"
+		sse-connect={ fmt.Sprintf("/chat/stream?thread_id=%s&msg_id=%s", threadId, msgId) }
+		sse-close="done"
+		class="w-fit max-w-md px-4 py-2 rounded-lg text-sm shadow-sm mr-auto bg-card text-card-foreground border border-border rounded-bl-none whitespace-pre-wrap leading-relaxed"
+	>
+		<span sse-swap="chunk" hx-swap="beforeend"></span>
+		<span sse-swap="status" hx-swap="outerHTML" class="text-muted-foreground animate-pulse">Thinking...</span>
+	</div>
 }
