@@ -2,7 +2,7 @@ package pages
 
 import "github.com/gokuls-codes/go-gen-ui/internal/views"
 
-templ Index() {
+templ Index(threadId string) {
     @views.Base("Gen UI Playground") {
         <main class="max-w-2xl mx-auto p-6">
             <h1 class="text-3xl font-bold mb-4">Gen UI Playground</h1>
@@ -19,6 +19,7 @@ templ Index() {
                 hx-swap="beforeend"
                 hx-on::after-request="this.reset()"
                 class="pt-4 border-t border-border flex gap-3">
+                <input type="hidden" name="thread_id" value={ threadId }/>
                 <input 
                     type="text" 
                     name="message" 
