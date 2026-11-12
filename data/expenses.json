@@ -136,6 +136,14 @@
       "description": "added-through-frontend",
       "createdAt": "2026-11-12T14:24:34.260357Z",
       "paymentModeId": "pm_cash"
+    },
+    {
+      "id": "exp_0ae7e99c",
+      "categoryId": "cat_food",
+      "amount": 10,
+      "description": "Lunch",
+      "createdAt": "2026-11-12T14:59:37.853829Z",
+      "paymentModeId": "pm_card"
     }
   ]
 }

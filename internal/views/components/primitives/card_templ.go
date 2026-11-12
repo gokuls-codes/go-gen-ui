@@ -68,7 +68,7 @@ func Card(props CardProps) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var3 = []any{"bg-card text-card-foreground border border-border rounded-lg p-5 shadow-sm space-y-4 w-full max-w-lg",
+			var templ_7745c5c3_Var3 = []any{"bg-card text-card-foreground border border-border rounded-lg p-5 shadow-sm space-y-4 w-full",
 				props.Class,
 			}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_ElementWriter, templ_7745c5c3_Var3...)

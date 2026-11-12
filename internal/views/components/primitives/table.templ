@@ -20,7 +20,7 @@ templ Table(props TableProps) {
 	>
 		<table class="w-full text-sm text-left">
 			if props.Caption != "" {
-				<caption class="px-4 py-2 text-xs text-muted-foreground text-left border-b border-border bg-muted/30">
+				<caption class="px-3 py-2 text-xs text-muted-foreground text-left border-b border-border bg-muted/30">
 					{ props.Caption }
 				</caption>
 			}
@@ -28,7 +28,7 @@ templ Table(props TableProps) {
 				<thead class="bg-muted/50 text-xs uppercase text-muted-foreground border-b border-border">
 					<tr>
 						for _, header := range props.Headers {
-							<th class="px-4 py-2.5 font-medium whitespace-nowrap">{ header }</th>
+							<th class="px-3 py-2 font-medium whitespace-nowrap">{ header }</th>
 						}
 					</tr>
 				</thead>
@@ -37,7 +37,7 @@ templ Table(props TableProps) {
 				for _, row := range props.Rows {
 					<tr class="hover:bg-muted/30 transition-colors">
 						for _, cell := range row {
-							<td class="px-4 py-2.5 text-foreground whitespace-nowrap">{ cell }</td>
+							<td class="px-3 py-2 text-foreground">{ cell }</td>
 						}
 					</tr>
 				}

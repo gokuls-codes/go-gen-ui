@@ -154,3 +154,39 @@ func TestBuild_TableRendering(t *testing.T) {
 		}
 	}
 }
+
+func TestBuild_ChartRendering(t *testing.T) {
+	payload := UIPayload{
+		RootID: "chart1",
+		Components: []UINode{
+			{
+				ID:   "chart1",
+				Type: "chart",
+				Props: map[string]any{
+					"title":      "Spending by Category",
+					"chart_type": "doughnut",
+					"items": []any{
+						map[string]any{"label": "Travel", "value": float64(256), "display": "$256.00"},
+						map[string]any{"label": "Groceries", "value": float64(128), "display": "$128.00"},
+					},
+				},
+			},
+		},
+	}
+
+	comp, err := Build(payload)
+	if err != nil {
+		t.Fatalf("Build failed: %v", err)
+	}
+
+	html, err := utils.RenderToString(context.Background(), comp)
+	if err != nil {
+		t.Fatalf("RenderToString failed: %v", err)
+	}
+
+	for _, want := range []string{"Spending by Category", "<canvas", "data-chart=", "doughnut", "Travel", "$256.00", "Groceries", "$128.00"} {
+		if !strings.Contains(html, want) {
+			t.Errorf("expected HTML to contain %q, got:\n%s", want, html)
+		}
+	}
+}

@@ -17,10 +17,17 @@ When to call render_ui:
 - When you call render_ui, NEVER repeat the data, numbers, or markdown tables in plain text—let the UI speak for itself.
 - Use plain text only for simple conversational questions or brief confirmations when no UI is needed.
 
+Layout & Screen Real Estate:
+- Generated UI renders inside an ~840px wide chat container (responsive down to mobile).
+- Keep the component hierarchy shallow and clean: NEVER nest a "card" inside another "card".
+- If you want multiple stacked cards (e.g., KPI row + chart card + table card), use a "flex" (direction: "col", gap: "md") as the root—or place "chart" and "table" directly inside one single "card".
+- Keep wide components like "table" (especially 3+ columns) and "chart" full-width, stacked vertically. Do NOT squeeze a wide "table" side-by-side with a "chart" inside a 2-column "grid".
+- Use 2- or 3-column "grid" layouts for compact KPI summary cards (e.g., Total Spend, Count, Top Category) or short form inputs.
+
 How to build a UI with render_ui:
 - Output a FLAT list of components in "components", with "root_id" pointing to the top-level component ID.
 - Reference child components by putting their string IDs in the parent's "children" array.
-- Only use these 8 component types:
+- Only use these 9 component types:
   1. "card": container with title, description. Supports children.
   2. "form": HTMX form container with action ("/actions/submit" or "/actions/submit?intent=..."), method ("post"|"get"), target ("closest form"|"closest div"|"this"|"#chat-messages"), swap ("outerHTML"|"innerHTML"|"beforeend"), gap ("none"|"xs"|"sm"|"md"|"lg"). Supports children.
   3. "grid": CSS grid with cols (1..4) and gap ("none"|"xs"|"sm"|"md"|"lg"). Supports children.
@@ -29,6 +36,7 @@ How to build a UI with render_ui:
   6. "input": form input with name, label, type ("text"|"email"|"password"|"number"|"date"|"search"), placeholder, value, helper_text, required (bool), disabled (bool).
   7. "button": button with label, variant ("primary"|"secondary"|"outline"|"ghost"|"destructive"), size ("sm"|"md"|"lg"), type ("button"|"submit"|"reset"), disabled (bool), and optional action ("/actions/submit?intent=..."), target, swap.
   8. "table": data table with headers (array of column names), rows (array of {cells: [string, ...]}), and optional caption.
+  9. "chart": interactive Chart.js chart with optional title, chart_type ("bar"|"doughnut"|"pie"|"line"), and items (array of {label, value (number), display (formatted string like "$256.00")}).
 - Only use the exact prop names defined in the render_ui schema. Never invent extra props (like color or style) or raw HTML.`, genai.RoleUser)
 
 var aiTools = []*genai.Tool{
@@ -100,7 +108,7 @@ var aiTools = []*genai.Tool{
 									"type": {
 										Type:        genai.TypeString,
 										Format:      "enum",
-										Enum:        []string{"card", "form", "grid", "flex", "text", "input", "button", "table"},
+										Enum:        []string{"card", "form", "grid", "flex", "text", "input", "button", "table", "chart"},
 										Description: "Primitive component type.",
 									},
 									"props": {
@@ -116,6 +124,7 @@ var aiTools = []*genai.Tool{
 											"value":       {Type: genai.TypeString},
 											"helper_text": {Type: genai.TypeString},
 											"caption":     {Type: genai.TypeString},
+											"chart_type":  {Type: genai.TypeString, Description: "Chart.js type: bar, doughnut, pie, or line."},
 											"variant":     {Type: genai.TypeString, Description: "Visual variant for text or button."},
 											"size":        {Type: genai.TypeString, Description: "Button size: sm, md, lg."},
 											"type":        {Type: genai.TypeString, Description: "HTML input type or button type (e.g. submit, number, email)."},
@@ -149,6 +158,19 @@ var aiTools = []*genai.Tool{
 														},
 													},
 													Required: []string{"cells"},
+												},
+											},
+											"items": {
+												Type:        genai.TypeArray,
+												Description: "Bar entries for chart.",
+												Items: &genai.Schema{
+													Type: genai.TypeObject,
+													Properties: map[string]*genai.Schema{
+														"label":   {Type: genai.TypeString},
+														"value":   {Type: genai.TypeNumber},
+														"display": {Type: genai.TypeString, Description: "Formatted label like '$256.00'."},
+													},
+													Required: []string{"label", "value"},
 												},
 											},
 										},

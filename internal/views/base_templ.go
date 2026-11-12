@@ -40,7 +40,7 @@ func Base(title string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</title><link href=\"/static/css/styles.css\" rel=\"stylesheet\"><script src=\"/static/js/htmx.min.js\"></script><script src=\"/static/js/htmx-ext-sse.js\"></script><script src=\"/static/js/chat.js\" defer></script></head><body class=\"bg-background text-foreground min-h-screen\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</title><link href=\"/static/css/styles.css\" rel=\"stylesheet\"><script src=\"/static/js/htmx.min.js\"></script><script src=\"/static/js/htmx-ext-sse.js\"></script><script src=\"/static/js/chart.umd.min.js\" defer></script><script src=\"/static/js/chat.js\" defer></script></head><body class=\"bg-background text-foreground min-h-screen\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

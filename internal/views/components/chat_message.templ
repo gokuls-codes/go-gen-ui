@@ -34,7 +34,7 @@ templ ChatPendingExchange(userMessage, msgId, threadId string) {
 }
 
 templ ChatAssistantResponse(text string, widgets []templ.Component) {
-	<div class="space-y-3 mr-auto w-full max-w-lg">
+	<div class="space-y-3 mr-auto w-full">
 		if text != "" {
 			@ChatMessage(text, false)
 		}

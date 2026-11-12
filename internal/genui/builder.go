@@ -91,6 +91,42 @@ func (n UINode) tableRows(key string) [][]string {
 	return rows
 }
 
+func (n UINode) chartItems(key string) []primitives.ChartItem {
+	if n.Props == nil {
+		return nil
+	}
+	raw, ok := n.Props[key].([]any)
+	if !ok {
+		return nil
+	}
+	items := make([]primitives.ChartItem, 0, len(raw))
+	for _, r := range raw {
+		m, ok := r.(map[string]any)
+		if !ok {
+			continue
+		}
+		item := primitives.ChartItem{
+			Label:   mapStr(m, "label"),
+			Display: mapStr(m, "display"),
+		}
+		switch v := m["value"].(type) {
+		case float64:
+			item.Value = v
+		case int:
+			item.Value = float64(v)
+		case int64:
+			item.Value = float64(v)
+		}
+		items = append(items, item)
+	}
+	return items
+}
+
+func mapStr(m map[string]any, key string) string {
+	s, _ := m[key].(string)
+	return s
+}
+
 func toStringSlice(v any) []string {
 	switch s := v.(type) {
 	case []string:
@@ -230,6 +266,12 @@ func mapPrimitive(node UINode) templ.Component {
 			ID:          node.resolvedID(),
 			Title:       node.str("title"),
 			Description: node.str("description"),
+		})
+	case "chart":
+		return primitives.Chart(primitives.ChartProps{
+			Title:     node.str("title"),
+			ChartType: node.str("chart_type"),
+			Items:     node.chartItems("items"),
 		})
 	case "flex":
 		return primitives.Flex(primitives.FlexProps{

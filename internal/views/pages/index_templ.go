@@ -40,7 +40,7 @@ func Index(threadId string) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"max-w-2xl mx-auto p-6 flex flex-col h-screen\"><h1 class=\"text-3xl font-bold mb-4\">Gen UI Playground</h1><div id=\"chat-messages\" class=\"flex-1 overflow-y-auto py-6 space-y-4\"><div class=\"bg-muted/50 border border-border p-4 rounded-lg text-sm text-muted-foreground\">Try asking:  <span class=\"text-foreground font-medium\">\"What's the weather in Tokyo?\"</span> or  <span class=\"text-foreground font-medium\">\"Show me Apple's stock summary\"</span>.</div></div><form id=\"chat-form\" hx-post=\"/chat\" hx-target=\"#chat-messages\" hx-swap=\"beforeend\" hx-on::after-request=\"this.reset()\" class=\"pt-4 flex gap-3\"><input id=\"thread-id\" type=\"hidden\" name=\"thread_id\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"max-w-4xl mx-auto p-6 flex flex-col h-screen\"><h1 class=\"text-3xl font-bold mb-4\">Gen UI Playground</h1><div id=\"chat-messages\" class=\"flex-1 overflow-y-auto py-6 space-y-4\"><div class=\"bg-muted/50 border border-border p-4 rounded-lg text-sm text-muted-foreground\">Try asking:  <span class=\"text-foreground font-medium\">\"What's the weather in Tokyo?\"</span> or  <span class=\"text-foreground font-medium\">\"Show me Apple's stock summary\"</span>.</div></div><form id=\"chat-form\" hx-post=\"/chat\" hx-target=\"#chat-messages\" hx-swap=\"beforeend\" hx-on::after-request=\"this.reset()\" class=\"pt-4 flex gap-3\"><input id=\"thread-id\" type=\"hidden\" name=\"thread_id\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
