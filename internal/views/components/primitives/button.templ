@@ -1,0 +1,82 @@
+package primitives
+
+// ButtonProps defines the configurable properties for the Button primitive.
+type ButtonProps struct {
+	ID       string
+	Label    string
+	Variant  string // "primary" (default), "secondary", "outline", "ghost", "destructive"
+	Size     string // "sm", "md" (default), "lg"
+	Type     string // "button" (default), "submit", "reset"
+	Disabled bool
+	Action   string // Optional HTMX POST endpoint
+	Target   string // Optional hx-target selector
+	Swap     string // Optional hx-swap strategy
+	Class    string // Optional extra classes
+	Attrs    templ.Attributes
+}
+
+func buttonVariantClass(variant string) string {
+	switch variant {
+	case "secondary":
+		return "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+	case "outline":
+		return "border border-border bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground"
+	case "ghost":
+		return "bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground"
+	case "destructive":
+		return "bg-destructive text-white hover:bg-destructive/90"
+	default:
+		return "bg-primary text-primary-foreground hover:bg-primary/90"
+	}
+}
+
+func buttonSizeClass(size string) string {
+	switch size {
+	case "sm":
+		return "h-8 px-3 text-xs"
+	case "lg":
+		return "h-11 px-6 text-base"
+	default:
+		return "h-9 px-4 py-2 text-sm"
+	}
+}
+
+func buttonType(t string) string {
+	if t == "" {
+		return "button"
+	}
+	return t
+}
+
+// Button renders an interactive button primitive styled with the theme tokens.
+templ Button(props ButtonProps) {
+	<button
+		if props.ID != "" {
+			id={ props.ID }
+		}
+		type={ buttonType(props.Type) }
+		disabled?={ props.Disabled }
+		if props.Action != "" {
+			hx-post={ props.Action }
+		}
+		if props.Target != "" {
+			hx-target={ props.Target }
+		}
+		if props.Swap != "" {
+			hx-swap={ props.Swap }
+		}
+		class={
+			"inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:pointer-events-none cursor-pointer",
+			buttonVariantClass(props.Variant),
+			buttonSizeClass(props.Size),
+			props.Class,
+		}
+		{ props.Attrs... }
+	>
+		if props.Label != "" {
+			{ props.Label }
+		}
+		{ children... }
+	</button>
+}
+

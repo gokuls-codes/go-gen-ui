@@ -1,0 +1,39 @@
+package primitives
+
+// CardProps defines the configurable properties for the Card primitive.
+type CardProps struct {
+	ID          string
+	Title       string
+	Description string
+	Class       string
+	Attrs       templ.Attributes
+}
+
+// Card renders a themed container card with optional title, description, and nested children.
+templ Card(props CardProps) {
+	<div
+		if props.ID != "" {
+			id={ props.ID }
+		}
+		class={
+			"bg-card text-card-foreground border border-border rounded-lg p-5 shadow-sm space-y-4 w-full max-w-lg",
+			props.Class,
+		}
+		{ props.Attrs... }
+	>
+		if props.Title != "" || props.Description != "" {
+			<div class="space-y-1">
+				if props.Title != "" {
+					<h3 class="text-lg font-semibold leading-none tracking-tight">{ props.Title }</h3>
+				}
+				if props.Description != "" {
+					<p class="text-sm text-muted-foreground">{ props.Description }</p>
+				}
+			</div>
+		}
+		<div class="space-y-3">
+			{ children... }
+		</div>
+	</div>
+}
+

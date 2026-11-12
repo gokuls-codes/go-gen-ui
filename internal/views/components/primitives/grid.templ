@@ -1,0 +1,38 @@
+package primitives
+
+// GridProps defines the configurable properties for the Grid layout primitive.
+type GridProps struct {
+	Cols  int    // 1 (default), 2, 3, 4
+	Gap   string // "none", "xs", "sm", "md" (default), "lg"
+	Class string
+	Attrs templ.Attributes
+}
+
+func gridColsClass(cols int) string {
+	switch cols {
+	case 2:
+		return "grid-cols-2"
+	case 3:
+		return "grid-cols-3"
+	case 4:
+		return "grid-cols-4"
+	default:
+		return "grid-cols-1"
+	}
+}
+
+// Grid renders a configurable CSS grid container primitive.
+templ Grid(props GridProps) {
+	<div
+		class={
+			"grid",
+			gridColsClass(props.Cols),
+			gapClass(props.Gap),
+			props.Class,
+		}
+		{ props.Attrs... }
+	>
+		{ children... }
+	</div>
+}
+

@@ -1,0 +1,78 @@
+package primitives
+
+// InputProps defines the configurable properties for the Input primitive.
+type InputProps struct {
+	ID           string
+	Name         string
+	Label        string
+	Type         string // "text" (default), "email", "password", "number", "date", "search"
+	Placeholder  string
+	Value        string
+	HelperText   string
+	Error        string
+	Required     bool
+	Disabled     bool
+	Autocomplete string
+	Class        string // Extra classes for the <input> element
+	WrapperClass string // Extra classes for the outer container
+	Attrs        templ.Attributes
+}
+
+func inputType(t string) string {
+	if t == "" {
+		return "text"
+	}
+	return t
+}
+
+// Input renders a form input primitive with optional label, helper text, and error state.
+templ Input(props InputProps) {
+	<div class={ "space-y-1.5 w-full", props.WrapperClass }>
+		if props.Label != "" {
+			<label
+				if props.ID != "" {
+					for={ props.ID }
+				}
+				class="block text-xs font-medium text-foreground"
+			>
+				{ props.Label }
+				if props.Required {
+					<span class="text-destructive ml-0.5">*</span>
+				}
+			</label>
+		}
+		<input
+			if props.ID != "" {
+				id={ props.ID }
+			}
+			type={ inputType(props.Type) }
+			if props.Name != "" {
+				name={ props.Name }
+			}
+			if props.Placeholder != "" {
+				placeholder={ props.Placeholder }
+			}
+			if props.Value != "" {
+				value={ props.Value }
+			}
+			if props.Autocomplete != "" {
+				autocomplete={ props.Autocomplete }
+			}
+			required?={ props.Required }
+			disabled?={ props.Disabled }
+			class={
+				"flex h-9 w-full rounded-md border bg-background px-3 py-1 text-sm text-foreground shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+				templ.KV("border-destructive focus-visible:ring-destructive", props.Error != ""),
+				templ.KV("border-input", props.Error == ""),
+				props.Class,
+			}
+			{ props.Attrs... }
+		/>
+		if props.Error != "" {
+			<p class="text-xs text-destructive">{ props.Error }</p>
+		} else if props.HelperText != "" {
+			<p class="text-xs text-muted-foreground">{ props.HelperText }</p>
+		}
+	</div>
+}
+

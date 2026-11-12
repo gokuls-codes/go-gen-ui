@@ -1,0 +1,70 @@
+package primitives
+
+// TextProps defines the configurable properties for the Text primitive.
+type TextProps struct {
+	Content string
+	Variant string // "h1", "h2", "h3", "body" (default), "muted", "code"
+	Class   string
+	Attrs   templ.Attributes
+}
+
+func textVariantClass(variant string) string {
+	switch variant {
+	case "h1":
+		return "text-2xl font-bold tracking-tight text-foreground"
+	case "h2":
+		return "text-xl font-semibold tracking-tight text-foreground"
+	case "h3":
+		return "text-base font-semibold text-foreground"
+	case "muted":
+		return "text-sm text-muted-foreground"
+	case "code":
+		return "font-mono text-xs bg-muted text-foreground px-1.5 py-0.5 rounded"
+	default:
+		return "text-sm text-foreground leading-relaxed"
+	}
+}
+
+templ textContent(content string) {
+	if content != "" {
+		{ content }
+	}
+	{ children... }
+}
+
+// Text renders styled typography based on the requested semantic variant.
+templ Text(props TextProps) {
+	switch props.Variant {
+		case "h1":
+			<h1 class={ textVariantClass(props.Variant), props.Class } { props.Attrs... }>
+				@textContent(props.Content) {
+					{ children... }
+				}
+			</h1>
+		case "h2":
+			<h2 class={ textVariantClass(props.Variant), props.Class } { props.Attrs... }>
+				@textContent(props.Content) {
+					{ children... }
+				}
+			</h2>
+		case "h3":
+			<h3 class={ textVariantClass(props.Variant), props.Class } { props.Attrs... }>
+				@textContent(props.Content) {
+					{ children... }
+				}
+			</h3>
+		case "code":
+			<code class={ textVariantClass(props.Variant), props.Class } { props.Attrs... }>
+				@textContent(props.Content) {
+					{ children... }
+				}
+			</code>
+		default:
+			<p class={ textVariantClass(props.Variant), props.Class } { props.Attrs... }>
+				@textContent(props.Content) {
+					{ children... }
+				}
+			</p>
+	}
+}
+

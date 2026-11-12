@@ -1,0 +1,42 @@
+package primitives
+
+// FormProps defines the configurable properties for the Form primitive.
+type FormProps struct {
+	ID     string
+	Action string // HTMX endpoint URL
+	Method string // "post" (default) or "get"
+	Target string // Optional hx-target selector
+	Swap   string // Optional hx-swap strategy (e.g. "outerHTML", "beforeend")
+	Gap    string // "none", "xs", "sm", "md" (default), "lg"
+	Class  string
+	Attrs  templ.Attributes
+}
+
+// Form renders an HTMX-enabled form container primitive.
+templ Form(props FormProps) {
+	<form
+		if props.ID != "" {
+			id={ props.ID }
+		}
+		if props.Action != "" && props.Method == "get" {
+			hx-get={ props.Action }
+		} else if props.Action != "" {
+			hx-post={ props.Action }
+		}
+		if props.Target != "" {
+			hx-target={ props.Target }
+		}
+		if props.Swap != "" {
+			hx-swap={ props.Swap }
+		}
+		class={
+			"flex flex-col",
+			gapClass(props.Gap),
+			props.Class,
+		}
+		{ props.Attrs... }
+	>
+		{ children... }
+	</form>
+}
+

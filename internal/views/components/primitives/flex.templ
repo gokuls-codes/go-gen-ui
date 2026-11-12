@@ -1,0 +1,87 @@
+package primitives
+
+// FlexProps defines the configurable properties for the Flex layout primitive.
+type FlexProps struct {
+	Direction string // "row" (default), "col", "row-reverse", "col-reverse"
+	Gap       string // "none", "xs", "sm", "md" (default), "lg"
+	Align     string // "start", "center", "end", "stretch" (default)
+	Justify   string // "start" (default), "center", "end", "between", "around"
+	Wrap      bool
+	Class     string
+	Attrs     templ.Attributes
+}
+
+func flexDirectionClass(dir string) string {
+	switch dir {
+	case "col":
+		return "flex-col"
+	case "row-reverse":
+		return "flex-row-reverse"
+	case "col-reverse":
+		return "flex-col-reverse"
+	default:
+		return "flex-row"
+	}
+}
+
+func gapClass(gap string) string {
+	switch gap {
+	case "none":
+		return "gap-0"
+	case "xs":
+		return "gap-1"
+	case "sm":
+		return "gap-2"
+	case "lg":
+		return "gap-6"
+	default:
+		return "gap-3"
+	}
+}
+
+func alignClass(align string) string {
+	switch align {
+	case "start":
+		return "items-start"
+	case "center":
+		return "items-center"
+	case "end":
+		return "items-end"
+	default:
+		return "items-stretch"
+	}
+}
+
+func justifyClass(justify string) string {
+	switch justify {
+	case "center":
+		return "justify-center"
+	case "end":
+		return "justify-end"
+	case "between":
+		return "justify-between"
+	case "around":
+		return "justify-around"
+	default:
+		return "justify-start"
+	}
+}
+
+// Flex renders a configurable flexbox container primitive.
+templ Flex(props FlexProps) {
+	<div
+		class={
+			"flex",
+			flexDirectionClass(props.Direction),
+			gapClass(props.Gap),
+			alignClass(props.Align),
+			justifyClass(props.Justify),
+			templ.KV("flex-wrap", props.Wrap),
+			props.Class,
+		}
+		{ props.Attrs... }
+	>
+		{ children... }
+	</div>
+}
+
