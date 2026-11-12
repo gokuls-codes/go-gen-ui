@@ -1,0 +1,81 @@
+package primitives
+
+import "strings"
+
+// SelectProps defines the configurable properties for the Select dropdown primitive.
+type SelectProps struct {
+	ID           string
+	Name         string
+	Label        string
+	Options      []string
+	Value        string
+	Placeholder  string
+	HelperText   string
+	Error        string
+	Required     bool
+	Disabled     bool
+	Class        string
+	WrapperClass string
+	Attrs        templ.Attributes
+}
+
+func isSelectedOption(opt, value string) bool {
+	return value != "" && strings.EqualFold(strings.TrimSpace(opt), strings.TrimSpace(value))
+}
+
+// Select renders a themed dropdown select primitive with optional pre-selected value.
+templ Select(props SelectProps) {
+	<div class={ "space-y-1.5 w-full", props.WrapperClass }>
+		if props.Label != "" {
+			<label
+				if props.ID != "" {
+					for={ props.ID }
+				}
+				class="block text-xs font-medium text-foreground"
+			>
+				{ props.Label }
+				if props.Required {
+					<span class="text-destructive ml-0.5">*</span>
+				}
+			</label>
+		}
+		<select
+			if props.ID != "" {
+				id={ props.ID }
+			}
+			if props.Name != "" {
+				name={ props.Name }
+			}
+			required?={ props.Required }
+			disabled?={ props.Disabled }
+			class={
+				"flex h-9 w-full rounded-md border bg-background px-3 py-1 text-sm text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+				templ.KV("border-destructive focus-visible:ring-destructive", props.Error != ""),
+				templ.KV("border-input", props.Error == ""),
+				props.Class,
+			}
+			{ props.Attrs... }
+		>
+			if props.Placeholder != "" || !props.Required {
+				<option value="" selected?={ props.Value == "" }>
+					if props.Placeholder != "" {
+						{ props.Placeholder }
+					} else {
+						Select an option...
+					}
+				</option>
+			}
+			for _, opt := range props.Options {
+				<option value={ opt } selected?={ isSelectedOption(opt, props.Value) }>
+					{ opt }
+				</option>
+			}
+		</select>
+		if props.Error != "" {
+			<p class="text-xs text-destructive">{ props.Error }</p>
+		} else if props.HelperText != "" {
+			<p class="text-xs text-muted-foreground">{ props.HelperText }</p>
+		}
+	</div>
+}
+

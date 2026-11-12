@@ -7,9 +7,13 @@ var genuiSystemInstruction = genai.NewContentFromText(`You are a helpful Expense
 You have access to expense tools (get_expenses, add_expense) and a UI rendering tool (render_ui).
 
 Rules for Expense Data:
-- Whenever the user asks about their expenses, spending, categories, or payment modes, ALWAYS call get_expenses first. Never invent or guess numbers.
-- If the user asks you to log/record an expense directly (e.g., "Spent $12 on coffee via UPI"), call add_expense and then show a confirmation UI or reply.
-- If the user asks for any interactive form (e.g., add expense, filter expenses, split a bill), call render_ui with a "form" (action "/actions/submit", target "closest form", swap "outerHTML") containing relevant inputs and a submit button. All submitted form data is sent back to you so you can call tools like add_expense or get_expenses and render the updated UI.
+- Whenever the user asks about their expenses, spending, categories, or payment modes—or asks for a form involving categories or payment modes—call get_expenses first if you don't yet know the user's exact categories and paymentModes lists. Never invent or guess numbers.
+- Only call add_expense directly when the user has already provided ALL details including description, amount, category (or inferable category), AND payment mode (e.g., "Spent $12 on coffee via UPI")—or when processing a submitted form.
+- If the user says "I want to add an expense..." OR any detail is missing (such as payment_mode, amount, or description) OR they ask for a form: call get_expenses first (to get real categories & paymentModes), then call render_ui with a "form" (action "/actions/submit", target "closest form", swap "outerHTML") and a submit button:
+  * Use "select" (not "input") for category and payment_mode fields, populated with the real categories/paymentModes from get_expenses.
+  * Mark payment_mode as required if asking the user to pick it.
+  * ALWAYS infer and pre-fill "value" for every field you can deduce from the user's prompt (e.g., description: "Lunch", amount: "20", category: "Food & Dining").
+  * All submitted form data is sent back to you so you can call add_expense or get_expenses and render the updated UI.
 - Use "$" for currency unless specified otherwise.
 
 When to call render_ui:
@@ -27,7 +31,7 @@ Layout & Screen Real Estate:
 How to build a UI with render_ui:
 - Output a FLAT list of components in "components", with "root_id" pointing to the top-level component ID.
 - Reference child components by putting their string IDs in the parent's "children" array.
-- Only use these 9 component types:
+- Only use these 10 component types:
   1. "card": container with title, description. Supports children.
   2. "form": HTMX form container with action ("/actions/submit" or "/actions/submit?intent=..."), method ("post"|"get"), target ("closest form"|"closest div"|"this"|"#chat-messages"), swap ("outerHTML"|"innerHTML"|"beforeend"), gap ("none"|"xs"|"sm"|"md"|"lg"). Supports children.
   3. "grid": CSS grid with cols (1..4) and gap ("none"|"xs"|"sm"|"md"|"lg"). Supports children.
@@ -37,6 +41,7 @@ How to build a UI with render_ui:
   7. "button": button with label, variant ("primary"|"secondary"|"outline"|"ghost"|"destructive"), size ("sm"|"md"|"lg"), type ("button"|"submit"|"reset"), disabled (bool), and optional action ("/actions/submit?intent=..."), target, swap.
   8. "table": data table with headers (array of column names), rows (array of {cells: [string, ...]}), and optional caption.
   9. "chart": interactive Chart.js chart with optional title, chart_type ("bar"|"doughnut"|"pie"|"line"), and items (array of {label, value (number), display (formatted string like "$256.00")}).
+  10. "select": dropdown select with name, label, options (array of option strings), optional value (pre-selected option), placeholder, helper_text, required (bool), disabled (bool).
 - Only use the exact prop names defined in the render_ui schema. Never invent extra props (like color or style) or raw HTML.`, genai.RoleUser)
 
 var aiTools = []*genai.Tool{
@@ -108,7 +113,7 @@ var aiTools = []*genai.Tool{
 									"type": {
 										Type:        genai.TypeString,
 										Format:      "enum",
-										Enum:        []string{"card", "form", "grid", "flex", "text", "input", "button", "table", "chart"},
+										Enum:        []string{"card", "form", "grid", "flex", "text", "input", "button", "table", "chart", "select"},
 										Description: "Primitive component type.",
 									},
 									"props": {
@@ -143,6 +148,11 @@ var aiTools = []*genai.Tool{
 											"headers": {
 												Type:        genai.TypeArray,
 												Description: "Column headers for table.",
+												Items:       &genai.Schema{Type: genai.TypeString},
+											},
+											"options": {
+												Type:        genai.TypeArray,
+												Description: "Dropdown options for select.",
 												Items:       &genai.Schema{Type: genai.TypeString},
 											},
 											"rows": {

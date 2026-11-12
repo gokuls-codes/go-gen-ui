@@ -321,6 +321,19 @@ func mapPrimitive(node UINode) templ.Component {
 			Disabled:     node.boolVal("disabled"),
 			Autocomplete: node.str("autocomplete"),
 		})
+	case "select":
+		return primitives.Select(primitives.SelectProps{
+			ID:          node.resolvedID(),
+			Name:        node.str("name"),
+			Label:       node.str("label"),
+			Options:     node.strSlice("options"),
+			Value:       node.str("value"),
+			Placeholder: node.str("placeholder"),
+			HelperText:  node.str("helper_text"),
+			Error:       node.str("error"),
+			Required:    node.boolVal("required"),
+			Disabled:    node.boolVal("disabled"),
+		})
 	case "table":
 		return primitives.Table(primitives.TableProps{
 			Headers: node.strSlice("headers"),

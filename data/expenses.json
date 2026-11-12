@@ -144,6 +144,21 @@
       "description": "Lunch",
       "createdAt": "2026-11-12T14:59:37.853829Z",
       "paymentModeId": "pm_card"
+    },
+    {
+      "id": "exp_d3aa0ef5",
+      "categoryId": "cat_food",
+      "amount": 20,
+      "description": "Lunch",
+      "createdAt": "2026-11-12T15:11:49.514871Z"
+    },
+    {
+      "id": "exp_c1fbede8",
+      "categoryId": "cat_travel",
+      "amount": 5,
+      "description": "petrol",
+      "createdAt": "2026-11-12T15:13:32.252567Z",
+      "paymentModeId": "pm_upi"
     }
   ]
 }

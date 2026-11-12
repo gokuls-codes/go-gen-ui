@@ -190,3 +190,38 @@ func TestBuild_ChartRendering(t *testing.T) {
 		}
 	}
 }
+
+func TestBuild_SelectRendering(t *testing.T) {
+	payload := UIPayload{
+		RootID: "sel1",
+		Components: []UINode{
+			{
+				ID:   "sel1",
+				Type: "select",
+				Props: map[string]any{
+					"name":     "category",
+					"label":    "Category",
+					"options":  []any{"Food & Dining", "Travel", "Groceries"},
+					"value":    "food & dining",
+					"required": true,
+				},
+			},
+		},
+	}
+
+	comp, err := Build(payload)
+	if err != nil {
+		t.Fatalf("Build failed: %v", err)
+	}
+
+	html, err := utils.RenderToString(context.Background(), comp)
+	if err != nil {
+		t.Fatalf("RenderToString failed: %v", err)
+	}
+
+	for _, want := range []string{`<select`, `name="category"`, `required`, `<option value="Food &amp; Dining" selected`, `<option value="Travel"`} {
+		if !strings.Contains(html, want) {
+			t.Errorf("expected HTML to contain %q, got:\n%s", want, html)
+		}
+	}
+}
