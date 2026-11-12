@@ -19,16 +19,27 @@ templ ChatExchange(userMessage, aiResponse string) {
 	@ChatMessage(aiResponse, false)
 }
 
-templ ChatMessageStream(userMessage, msgId, threadId string) {
+templ ChatPendingExchange(userMessage, msgId, threadId string) {
 	@ChatMessage(userMessage, true)
 
 	<div
-		hx-ext="sse"
-		sse-connect={ fmt.Sprintf("/chat/stream?thread_id=%s&msg_id=%s", threadId, msgId) }
-		sse-close="done"
-		class="w-fit max-w-md px-4 py-2 rounded-lg text-sm shadow-sm mr-auto bg-card text-card-foreground border border-border rounded-bl-none whitespace-pre-wrap leading-relaxed"
+		data-chat-reply
+		hx-post={ fmt.Sprintf("/chat/reply?thread_id=%s&msg_id=%s", threadId, msgId) }
+		hx-trigger="load"
+		hx-swap="outerHTML"
+		class="w-fit max-w-md px-4 py-2 rounded-lg text-sm shadow-sm mr-auto bg-card text-muted-foreground border border-border rounded-bl-none animate-pulse"
 	>
-		<span sse-swap="chunk" hx-swap="beforeend"></span>
-		<span sse-swap="status" hx-swap="outerHTML" class="text-muted-foreground animate-pulse">Thinking...</span>
+		Thinking...
+	</div>
+}
+
+templ ChatAssistantResponse(text string, widgets []templ.Component) {
+	<div class="space-y-3 mr-auto w-full max-w-lg">
+		if text != "" {
+			@ChatMessage(text, false)
+		}
+		for _, widget := range widgets {
+			@widget
+		}
 	</div>
 }
