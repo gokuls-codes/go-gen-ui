@@ -1,0 +1,141 @@
+{
+  "categories": [
+    {
+      "id": "cat_food",
+      "name": "Food \u0026 Dining",
+      "color": "#f97316",
+      "createdAt": "2026-11-01T09:00:00Z"
+    },
+    {
+      "id": "cat_travel",
+      "name": "Travel",
+      "color": "#3b82f6",
+      "createdAt": "2026-11-01T09:00:00Z"
+    },
+    {
+      "id": "cat_subs",
+      "name": "Subscriptions",
+      "color": "#a855f7",
+      "createdAt": "2026-11-01T09:00:00Z"
+    },
+    {
+      "id": "cat_groceries",
+      "name": "Groceries",
+      "color": "#22c55e",
+      "createdAt": "2026-11-01T09:00:00Z"
+    },
+    {
+      "id": "cat_utils",
+      "name": "Utilities",
+      "color": "#eab308",
+      "createdAt": "2026-11-01T09:00:00Z"
+    }
+  ],
+  "paymentModes": [
+    {
+      "id": "pm_upi",
+      "name": "UPI",
+      "createdAt": "2026-11-01T09:00:00Z"
+    },
+    {
+      "id": "pm_card",
+      "name": "Credit Card",
+      "createdAt": "2026-11-01T09:00:00Z"
+    },
+    {
+      "id": "pm_cash",
+      "name": "Cash",
+      "createdAt": "2026-11-01T09:00:00Z"
+    }
+  ],
+  "expenses": [
+    {
+      "id": "exp_001",
+      "categoryId": "cat_food",
+      "amount": 18.5,
+      "description": "Lunch ramen \u0026 iced tea",
+      "createdAt": "2026-11-02T13:15:00Z",
+      "paymentModeId": "pm_upi"
+    },
+    {
+      "id": "exp_002",
+      "categoryId": "cat_subs",
+      "amount": 20,
+      "description": "AI Pro monthly subscription",
+      "createdAt": "2026-11-03T08:00:00Z",
+      "paymentModeId": "pm_card"
+    },
+    {
+      "id": "exp_003",
+      "categoryId": "cat_groceries",
+      "amount": 64.2,
+      "description": "Weekly supermarket groceries",
+      "createdAt": "2026-11-04T18:30:00Z",
+      "paymentModeId": "pm_card"
+    },
+    {
+      "id": "exp_004",
+      "categoryId": "cat_travel",
+      "amount": 14,
+      "description": "Airport metro \u0026 cab fare",
+      "createdAt": "2026-11-05T07:45:00Z",
+      "paymentModeId": "pm_upi"
+    },
+    {
+      "id": "exp_005",
+      "categoryId": "cat_utils",
+      "amount": 52,
+      "description": "Fiber internet monthly bill",
+      "createdAt": "2026-11-06T10:00:00Z",
+      "paymentModeId": "pm_upi"
+    },
+    {
+      "id": "exp_006",
+      "categoryId": "cat_food",
+      "amount": 6.75,
+      "description": "Morning cold brew \u0026 croissant",
+      "createdAt": "2026-11-07T09:10:00Z",
+      "paymentModeId": "pm_cash"
+    },
+    {
+      "id": "exp_007",
+      "categoryId": "cat_travel",
+      "amount": 42,
+      "description": "Fuel refill",
+      "createdAt": "2026-11-08T17:20:00Z",
+      "paymentModeId": "pm_card"
+    },
+    {
+      "id": "exp_008",
+      "categoryId": "cat_subs",
+      "amount": 11.99,
+      "description": "Music streaming family plan",
+      "createdAt": "2026-11-09T06:00:00Z",
+      "paymentModeId": "pm_card"
+    },
+    {
+      "id": "exp_009",
+      "categoryId": "cat_food",
+      "amount": 34.8,
+      "description": "Dinner with friends",
+      "createdAt": "2026-11-10T20:45:00Z",
+      "paymentModeId": "pm_upi"
+    },
+    {
+      "id": "exp_010",
+      "categoryId": "cat_groceries",
+      "amount": 28.4,
+      "description": "Fresh fruits, coffee beans, and milk",
+      "createdAt": "2026-11-11T11:30:00Z",
+      "paymentModeId": "pm_cash"
+    },
+    {
+      "id": "exp_1c6130f3",
+      "categoryId": "cat_travel",
+      "amount": 200,
+      "description": "added-through-frontend",
+      "createdAt": "2026-11-12T14:24:34.260357Z",
+      "paymentModeId": "pm_cash"
+    }
+  ]
+}

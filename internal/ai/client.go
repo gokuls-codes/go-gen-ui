@@ -41,7 +41,7 @@ func (c *Client) GetOrCreateChat(ctx context.Context, threadID string) (*genai.C
 
 	chat, err := c.genai.Chats.Create(ctx, defaultModel, &genai.GenerateContentConfig{
 		SystemInstruction: genuiSystemInstruction,
-		Tools:             []*genai.Tool{renderUITool},
+		Tools:             aiTools,
 	}, nil)
 	if err != nil {
 		return nil, err
