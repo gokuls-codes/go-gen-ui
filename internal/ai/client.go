@@ -42,6 +42,7 @@ func (c *Client) GetOrCreateChat(ctx context.Context, threadID string) (*genai.C
 	chat, err := c.genai.Chats.Create(ctx, defaultModel, &genai.GenerateContentConfig{
 		SystemInstruction: genuiSystemInstruction,
 		Tools:             aiTools,
+		Temperature:       genai.Ptr[float32](0.2),
 	}, nil)
 	if err != nil {
 		return nil, err

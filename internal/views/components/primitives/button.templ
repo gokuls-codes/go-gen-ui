@@ -58,6 +58,8 @@ templ Button(props ButtonProps) {
 		disabled?={ props.Disabled }
 		if props.Action != "" {
 			hx-post={ props.Action }
+			hx-include="#thread-id"
+			hx-disabled-elt="this"
 		}
 		if props.Target != "" {
 			hx-target={ props.Target }

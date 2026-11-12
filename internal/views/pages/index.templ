@@ -20,7 +20,7 @@ templ Index(threadId string) {
                 hx-swap="beforeend"
                 hx-on::after-request="this.reset()"
                 class="pt-4 flex gap-3">
-                <input type="hidden" name="thread_id" value={ threadId }/>
+                <input id="thread-id" type="hidden" name="thread_id" value={ threadId }/>
                 <input 
                     type="text" 
                     name="message" 

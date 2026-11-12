@@ -9,7 +9,7 @@ You have access to expense tools (get_expenses, add_expense) and a UI rendering 
 Rules for Expense Data:
 - Whenever the user asks about their expenses, spending, categories, or payment modes, ALWAYS call get_expenses first. Never invent or guess numbers.
 - If the user asks you to log/record an expense directly (e.g., "Spent $12 on coffee via UPI"), call add_expense and then show a confirmation UI or reply.
-- If the user asks for an interactive form to add an expense, call render_ui with a form pointing to action "/actions/expenses" (target "closest form", swap "outerHTML") containing inputs named "description", "amount" (type "number"), "category", and "payment_mode", plus a submit button.
+- If the user asks for any interactive form (e.g., add expense, filter expenses, split a bill), call render_ui with a "form" (action "/actions/submit", target "closest form", swap "outerHTML") containing relevant inputs and a submit button. All submitted form data is sent back to you so you can call tools like add_expense or get_expenses and render the updated UI.
 - Use "$" for currency unless specified otherwise.
 
 When to call render_ui:
@@ -22,12 +22,12 @@ How to build a UI with render_ui:
 - Reference child components by putting their string IDs in the parent's "children" array.
 - Only use these 8 component types:
   1. "card": container with title, description. Supports children.
-  2. "form": HTMX form container with action (must start with "/actions/"), method ("post"|"get"), target ("closest form"|"closest div"|"this"|"#chat-messages"), swap ("outerHTML"|"innerHTML"|"beforeend"), gap ("none"|"xs"|"sm"|"md"|"lg"). Supports children.
+  2. "form": HTMX form container with action ("/actions/submit" or "/actions/submit?intent=..."), method ("post"|"get"), target ("closest form"|"closest div"|"this"|"#chat-messages"), swap ("outerHTML"|"innerHTML"|"beforeend"), gap ("none"|"xs"|"sm"|"md"|"lg"). Supports children.
   3. "grid": CSS grid with cols (1..4) and gap ("none"|"xs"|"sm"|"md"|"lg"). Supports children.
   4. "flex": flexbox with direction ("row"|"col"|"row-reverse"|"col-reverse"), gap, align ("start"|"center"|"end"|"stretch"), justify ("start"|"center"|"end"|"between"|"around"), wrap (bool). Supports children.
   5. "text": typography with content and variant ("h1"|"h2"|"h3"|"body"|"muted"|"code").
   6. "input": form input with name, label, type ("text"|"email"|"password"|"number"|"date"|"search"), placeholder, value, helper_text, required (bool), disabled (bool).
-  7. "button": button with label, variant ("primary"|"secondary"|"outline"|"ghost"|"destructive"), size ("sm"|"md"|"lg"), type ("button"|"submit"|"reset"), disabled (bool), and optional action (must start with "/actions/"), target, swap.
+  7. "button": button with label, variant ("primary"|"secondary"|"outline"|"ghost"|"destructive"), size ("sm"|"md"|"lg"), type ("button"|"submit"|"reset"), disabled (bool), and optional action ("/actions/submit?intent=..."), target, swap.
   8. "table": data table with headers (array of column names), rows (array of {cells: [string, ...]}), and optional caption.
 - Only use the exact prop names defined in the render_ui schema. Never invent extra props (like color or style) or raw HTML.`, genai.RoleUser)
 
@@ -116,14 +116,14 @@ var aiTools = []*genai.Tool{
 											"value":       {Type: genai.TypeString},
 											"helper_text": {Type: genai.TypeString},
 											"caption":     {Type: genai.TypeString},
-											"variant":     {Type: genai.TypeString},
-											"size":        {Type: genai.TypeString},
-											"type":        {Type: genai.TypeString},
+											"variant":     {Type: genai.TypeString, Description: "Visual variant for text or button."},
+											"size":        {Type: genai.TypeString, Description: "Button size: sm, md, lg."},
+											"type":        {Type: genai.TypeString, Description: "HTML input type or button type (e.g. submit, number, email)."},
 											"direction":   {Type: genai.TypeString},
 											"gap":         {Type: genai.TypeString},
 											"align":       {Type: genai.TypeString},
 											"justify":     {Type: genai.TypeString},
-											"action":      {Type: genai.TypeString, Description: "Must start with /actions/"},
+											"action":      {Type: genai.TypeString, Description: "Must be /actions/submit or /actions/submit?intent=..."},
 											"method":      {Type: genai.TypeString},
 											"target":      {Type: genai.TypeString},
 											"swap":        {Type: genai.TypeString},

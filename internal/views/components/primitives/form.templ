@@ -23,6 +23,10 @@ templ Form(props FormProps) {
 		} else if props.Action != "" {
 			hx-post={ props.Action }
 		}
+		if props.Action != "" {
+			hx-include="#thread-id"
+			hx-disabled-elt="find button"
+		}
 		if props.Target != "" {
 			hx-target={ props.Target }
 		}

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 	"strings"
 	"sync"
 
@@ -75,7 +74,7 @@ func (s *Server) Start() error {
 	})
 
 	e.POST("/chat/reply", s.handleChatReply)
-	e.POST("/actions/expenses", s.handleAddExpenseAction)
+	e.POST("/actions/submit", s.handleActionSubmit)
 
 	return e.Start(s.addr)
 }
@@ -97,6 +96,42 @@ func (s *Server) handleChatReply(c *echo.Context) error {
 		return c.NoContent(http.StatusNotFound)
 	}
 
+	return s.replyWithAI(c, threadId, userMessage)
+}
+
+func (s *Server) handleActionSubmit(c *echo.Context) error {
+	threadId := c.FormValue("thread_id")
+	if threadId == "" {
+		return c.NoContent(http.StatusBadRequest)
+	}
+
+	formParams, err := c.FormValues()
+	if err != nil {
+		return c.NoContent(http.StatusBadRequest)
+	}
+
+	fields := make(map[string]string, len(formParams))
+	for key, vals := range formParams {
+		if key == "thread_id" || len(vals) == 0 {
+			continue
+		}
+		fields[key] = vals[0]
+	}
+
+	rawFields, err := json.Marshal(fields)
+	if err != nil {
+		return c.NoContent(http.StatusBadRequest)
+	}
+
+	prompt := fmt.Sprintf("User submitted the UI form with data: %s", string(rawFields))
+	if intent := strings.TrimSpace(c.QueryParam("intent")); intent != "" {
+		prompt = fmt.Sprintf("User submitted the UI form (intent: %s) with data: %s", intent, string(rawFields))
+	}
+
+	return s.replyWithAI(c, threadId, prompt)
+}
+
+func (s *Server) replyWithAI(c *echo.Context, threadId, userMessage string) error {
 	chat, err := s.aiClient.GetOrCreateChat(c.Request().Context(), threadId)
 	if err != nil {
 		log.Printf("chat init error: %v", err)
@@ -114,49 +149,6 @@ func (s *Server) handleChatReply(c *echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, components.ChatAssistantResponse(text, widgets))
-}
-
-func (s *Server) handleAddExpenseAction(c *echo.Context) error {
-	amount, err := strconv.ParseFloat(strings.TrimSpace(c.FormValue("amount")), 64)
-	if err != nil {
-		return utils.Render(c, http.StatusOK, components.ChatMessage("⚠️ Invalid amount", false))
-	}
-
-	added, err := s.expenses.Add(
-		c.FormValue("category"),
-		c.FormValue("payment_mode"),
-		c.FormValue("description"),
-		amount,
-	)
-	if err != nil {
-		return utils.Render(c, http.StatusOK, components.ChatMessage("⚠️ Could not add expense: "+err.Error(), false))
-	}
-
-	summary := fmt.Sprintf("$%.2f • %s", added.Amount, added.Category)
-	if added.PaymentMode != "" {
-		summary += " • " + added.PaymentMode
-	}
-
-	comp, err := genui.Build(genui.UIPayload{
-		RootID: "saved_card",
-		Components: []genui.UINode{
-			{
-				ID:       "saved_card",
-				Type:     "card",
-				Props:    map[string]any{"title": "Expense Saved", "description": added.Description},
-				Children: []string{"saved_details"},
-			},
-			{
-				ID:    "saved_details",
-				Type:  "text",
-				Props: map[string]any{"content": summary, "variant": "muted"},
-			},
-		},
-	})
-	if err != nil {
-		return utils.Render(c, http.StatusOK, components.ChatMessage("Saved: "+added.Description, false))
-	}
-	return utils.Render(c, http.StatusOK, comp)
 }
 
 func (s *Server) runChatTurn(ctx context.Context, chat *genai.Chat, initial genai.Part) (string, []templ.Component, error) {
@@ -227,11 +219,7 @@ func (s *Server) executeTool(fc *genai.FunctionCall, widgets *[]templ.Component)
 
 	case "get_expenses":
 		res := s.expenses.Query(argString(fc.Args, "category"), argString(fc.Args, "payment_mode"))
-		out, err := toMap(res)
-		if err != nil {
-			return map[string]any{"error": err.Error()}
-		}
-		return out
+		return formatExpensesForAI(res)
 
 	case "add_expense":
 		amount, _ := fc.Args["amount"].(float64)
@@ -252,6 +240,47 @@ func (s *Server) executeTool(fc *genai.FunctionCall, widgets *[]templ.Component)
 
 	default:
 		return map[string]any{"error": "unknown tool: " + fc.Name}
+	}
+}
+
+func formatExpensesForAI(res expenses.QueryResult) map[string]any {
+	items := make([]map[string]any, 0, len(res.Expenses))
+	for _, e := range res.Expenses {
+		items = append(items, map[string]any{
+			"date":        e.CreatedAt.Format("2006-01-02"),
+			"description": e.Description,
+			"amount":      e.Amount,
+			"category":    e.Category,
+			"paymentMode": e.PaymentMode,
+		})
+	}
+
+	breakdown := make([]map[string]any, 0, len(res.ByCategory))
+	for _, b := range res.ByCategory {
+		breakdown = append(breakdown, map[string]any{
+			"category": b.Category,
+			"total":    b.Total,
+			"count":    b.Count,
+		})
+	}
+
+	catNames := make([]string, 0, len(res.Categories))
+	for _, c := range res.Categories {
+		catNames = append(catNames, c.Name)
+	}
+
+	pmNames := make([]string, 0, len(res.PaymentModes))
+	for _, p := range res.PaymentModes {
+		pmNames = append(pmNames, p.Name)
+	}
+
+	return map[string]any{
+		"totalAmount":  res.TotalAmount,
+		"count":        res.Count,
+		"byCategory":   breakdown,
+		"expenses":     items,
+		"categories":   catNames,
+		"paymentModes": pmNames,
 	}
 }
 

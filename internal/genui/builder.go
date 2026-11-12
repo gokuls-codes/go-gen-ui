@@ -187,7 +187,7 @@ func safeAction(action string) string {
 	if action == "" || strings.Contains(action, "..") || strings.Contains(action, "//") {
 		return ""
 	}
-	if action == "/actions" || strings.HasPrefix(action, "/actions/") {
+	if action == "/actions/submit" || strings.HasPrefix(action, "/actions/submit?") {
 		return action
 	}
 	return ""
@@ -240,12 +240,24 @@ func mapPrimitive(node UINode) templ.Component {
 			Wrap:      node.boolVal("wrap"),
 		})
 	case "form":
+		action := safeAction(node.str("action"))
+		if action == "" {
+			action = "/actions/submit"
+		}
+		target := safeTarget(node.str("target"))
+		if target == "" {
+			target = "closest form"
+		}
+		swap := safeSwap(node.str("swap"))
+		if swap == "" {
+			swap = "outerHTML"
+		}
 		return primitives.Form(primitives.FormProps{
 			ID:     node.resolvedID(),
-			Action: safeAction(node.str("action")),
+			Action: action,
 			Method: node.str("method"),
-			Target: safeTarget(node.str("target")),
-			Swap:   safeSwap(node.str("swap")),
+			Target: target,
+			Swap:   swap,
 			Gap:    node.str("gap"),
 		})
 	case "grid":
