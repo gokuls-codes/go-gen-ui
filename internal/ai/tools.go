@@ -14,12 +14,13 @@ Rules for Expense Data:
 
 When to call render_ui:
 - Use render_ui whenever a visual card, dashboard, summary, breakdown, list, or form makes the answer clearer.
-- Use plain text for simple conversational questions or brief confirmations.
+- When you call render_ui, NEVER repeat the data, numbers, or markdown tables in plain text—let the UI speak for itself.
+- Use plain text only for simple conversational questions or brief confirmations when no UI is needed.
 
 How to build a UI with render_ui:
 - Output a FLAT list of components in "components", with "root_id" pointing to the top-level component ID.
 - Reference child components by putting their string IDs in the parent's "children" array.
-- Only use these 7 component types:
+- Only use these 8 component types:
   1. "card": container with title, description. Supports children.
   2. "form": HTMX form container with action (must start with "/actions/"), method ("post"|"get"), target ("closest form"|"closest div"|"this"|"#chat-messages"), swap ("outerHTML"|"innerHTML"|"beforeend"), gap ("none"|"xs"|"sm"|"md"|"lg"). Supports children.
   3. "grid": CSS grid with cols (1..4) and gap ("none"|"xs"|"sm"|"md"|"lg"). Supports children.
@@ -27,7 +28,8 @@ How to build a UI with render_ui:
   5. "text": typography with content and variant ("h1"|"h2"|"h3"|"body"|"muted"|"code").
   6. "input": form input with name, label, type ("text"|"email"|"password"|"number"|"date"|"search"), placeholder, value, helper_text, required (bool), disabled (bool).
   7. "button": button with label, variant ("primary"|"secondary"|"outline"|"ghost"|"destructive"), size ("sm"|"md"|"lg"), type ("button"|"submit"|"reset"), disabled (bool), and optional action (must start with "/actions/"), target, swap.
-- Never invent raw CSS classes or HTML.`, genai.RoleUser)
+  8. "table": data table with headers (array of column names), rows (array of {cells: [string, ...]}), and optional caption.
+- Only use the exact prop names defined in the render_ui schema. Never invent extra props (like color or style) or raw HTML.`, genai.RoleUser)
 
 var aiTools = []*genai.Tool{
 	{
@@ -98,7 +100,7 @@ var aiTools = []*genai.Tool{
 									"type": {
 										Type:        genai.TypeString,
 										Format:      "enum",
-										Enum:        []string{"card", "form", "grid", "flex", "text", "input", "button"},
+										Enum:        []string{"card", "form", "grid", "flex", "text", "input", "button", "table"},
 										Description: "Primitive component type.",
 									},
 									"props": {
@@ -113,6 +115,7 @@ var aiTools = []*genai.Tool{
 											"placeholder": {Type: genai.TypeString},
 											"value":       {Type: genai.TypeString},
 											"helper_text": {Type: genai.TypeString},
+											"caption":     {Type: genai.TypeString},
 											"variant":     {Type: genai.TypeString},
 											"size":        {Type: genai.TypeString},
 											"type":        {Type: genai.TypeString},
@@ -128,6 +131,26 @@ var aiTools = []*genai.Tool{
 											"wrap":        {Type: genai.TypeBoolean},
 											"required":    {Type: genai.TypeBoolean},
 											"disabled":    {Type: genai.TypeBoolean},
+											"headers": {
+												Type:        genai.TypeArray,
+												Description: "Column headers for table.",
+												Items:       &genai.Schema{Type: genai.TypeString},
+											},
+											"rows": {
+												Type:        genai.TypeArray,
+												Description: "List of table rows, each containing a cells array.",
+												Items: &genai.Schema{
+													Type: genai.TypeObject,
+													Properties: map[string]*genai.Schema{
+														"cells": {
+															Type:        genai.TypeArray,
+															Description: "Ordered cell strings for this row.",
+															Items:       &genai.Schema{Type: genai.TypeString},
+														},
+													},
+													Required: []string{"cells"},
+												},
+											},
 										},
 									},
 									"children": {

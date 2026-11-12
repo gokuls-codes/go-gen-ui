@@ -164,6 +164,7 @@ func (s *Server) runChatTurn(ctx context.Context, chat *genai.Chat, initial gena
 	var widgets []templ.Component
 
 	parts := []genai.Part{initial}
+	retriedMalformed := false
 
 	for turn := 0; turn < maxToolTurns; turn++ {
 		resp, err := chat.SendMessage(ctx, parts...)
@@ -171,17 +172,26 @@ func (s *Server) runChatTurn(ctx context.Context, chat *genai.Chat, initial gena
 			return "", nil, err
 		}
 
-		if t := strings.TrimSpace(resp.Text()); t != "" {
-			texts = append(texts, t)
+		if len(widgets) == 0 {
+			if t := strings.TrimSpace(resp.Text()); t != "" {
+				texts = append(texts, t)
+			}
 		}
 
 		fcs := resp.FunctionCalls()
 		if len(fcs) == 0 {
-			if len(texts) == 0 && len(widgets) == 0 && len(resp.Candidates) > 0 {
+			if len(resp.Candidates) > 0 {
 				cand := resp.Candidates[0]
-				log.Printf("empty gemini response: finishReason=%s finishMessage=%q parts=%d", cand.FinishReason, cand.FinishMessage, candidatePartCount(cand))
-				if cand.FinishReason != "" && cand.FinishReason != genai.FinishReasonStop {
-					texts = append(texts, "⚠️ Gemini stopped ("+string(cand.FinishReason)+"): "+cand.FinishMessage)
+				if cand.FinishReason == genai.FinishReasonMalformedFunctionCall && !retriedMalformed {
+					retriedMalformed = true
+					log.Printf("retrying after MALFORMED_FUNCTION_CALL")
+					continue
+				}
+				if len(texts) == 0 && len(widgets) == 0 {
+					log.Printf("empty gemini response: finishReason=%s finishMessage=%q parts=%d", cand.FinishReason, cand.FinishMessage, candidatePartCount(cand))
+					if cand.FinishReason != "" && cand.FinishReason != genai.FinishReasonStop {
+						texts = append(texts, "⚠️ Gemini stopped ("+string(cand.FinishReason)+"): "+cand.FinishMessage)
+					}
 				}
 			}
 			break
@@ -213,7 +223,7 @@ func (s *Server) executeTool(fc *genai.FunctionCall, widgets *[]templ.Component)
 			return map[string]any{"error": err.Error()}
 		}
 		*widgets = append(*widgets, comp)
-		return map[string]any{"output": "UI widget rendered successfully"}
+		return map[string]any{"output": "UI widget rendered and displayed to the user. Reply briefly with 'Done.' and do not repeat any data or markdown tables."}
 
 	case "get_expenses":
 		res := s.expenses.Query(argString(fc.Args, "category"), argString(fc.Args, "payment_mode"))

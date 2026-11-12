@@ -1,0 +1,48 @@
+package primitives
+
+// TableProps defines the configurable properties for the Table primitive.
+type TableProps struct {
+	Headers []string
+	Rows    [][]string
+	Caption string
+	Class   string
+	Attrs   templ.Attributes
+}
+
+// Table renders a responsive, themed data table primitive.
+templ Table(props TableProps) {
+	<div
+		class={
+			"w-full overflow-x-auto rounded-lg border border-border",
+			props.Class,
+		}
+		{ props.Attrs... }
+	>
+		<table class="w-full text-sm text-left">
+			if props.Caption != "" {
+				<caption class="px-4 py-2 text-xs text-muted-foreground text-left border-b border-border bg-muted/30">
+					{ props.Caption }
+				</caption>
+			}
+			if len(props.Headers) > 0 {
+				<thead class="bg-muted/50 text-xs uppercase text-muted-foreground border-b border-border">
+					<tr>
+						for _, header := range props.Headers {
+							<th class="px-4 py-2.5 font-medium whitespace-nowrap">{ header }</th>
+						}
+					</tr>
+				</thead>
+			}
+			<tbody class="divide-y divide-border">
+				for _, row := range props.Rows {
+					<tr class="hover:bg-muted/30 transition-colors">
+						for _, cell := range row {
+							<td class="px-4 py-2.5 text-foreground whitespace-nowrap">{ cell }</td>
+						}
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}
+

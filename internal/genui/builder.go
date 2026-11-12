@@ -65,6 +65,53 @@ func (n UINode) boolVal(key string) bool {
 	return b
 }
 
+func (n UINode) strSlice(key string) []string {
+	if n.Props == nil {
+		return nil
+	}
+	return toStringSlice(n.Props[key])
+}
+
+func (n UINode) tableRows(key string) [][]string {
+	if n.Props == nil {
+		return nil
+	}
+	raw, ok := n.Props[key].([]any)
+	if !ok {
+		return nil
+	}
+	rows := make([][]string, 0, len(raw))
+	for _, r := range raw {
+		rowMap, ok := r.(map[string]any)
+		if !ok {
+			continue
+		}
+		rows = append(rows, toStringSlice(rowMap["cells"]))
+	}
+	return rows
+}
+
+func toStringSlice(v any) []string {
+	switch s := v.(type) {
+	case []string:
+		return s
+	case []any:
+		out := make([]string, 0, len(s))
+		for _, item := range s {
+			if item == nil {
+				out = append(out, "")
+			} else if str, ok := item.(string); ok {
+				out = append(out, str)
+			} else {
+				out = append(out, fmt.Sprint(item))
+			}
+		}
+		return out
+	default:
+		return nil
+	}
+}
+
 func (n UINode) resolvedID() string {
 	if id := n.str("id"); id != "" {
 		return id
@@ -219,6 +266,12 @@ func mapPrimitive(node UINode) templ.Component {
 			Required:     node.boolVal("required"),
 			Disabled:     node.boolVal("disabled"),
 			Autocomplete: node.str("autocomplete"),
+		})
+	case "table":
+		return primitives.Table(primitives.TableProps{
+			Headers: node.strSlice("headers"),
+			Rows:    node.tableRows("rows"),
+			Caption: node.str("caption"),
 		})
 	case "text":
 		return primitives.Text(primitives.TextProps{

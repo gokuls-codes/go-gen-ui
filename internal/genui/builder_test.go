@@ -115,3 +115,39 @@ func TestBuild_CycleProtection(t *testing.T) {
 		t.Fatalf("RenderToString failed on cycle: %v", err)
 	}
 }
+
+func TestBuild_TableRendering(t *testing.T) {
+	payload := UIPayload{
+		RootID: "tbl1",
+		Components: []UINode{
+			{
+				ID:   "tbl1",
+				Type: "table",
+				Props: map[string]any{
+					"caption": "Recent Expenses",
+					"headers": []any{"Item", "Amount"},
+					"rows": []any{
+						map[string]any{"cells": []any{"Coffee", "$6.75"}},
+						map[string]any{"cells": []any{"Cab", "$14.00"}},
+					},
+				},
+			},
+		},
+	}
+
+	comp, err := Build(payload)
+	if err != nil {
+		t.Fatalf("Build failed: %v", err)
+	}
+
+	html, err := utils.RenderToString(context.Background(), comp)
+	if err != nil {
+		t.Fatalf("RenderToString failed: %v", err)
+	}
+
+	for _, want := range []string{"Recent Expenses", "<thead", "<th", "Item", "Coffee", "$6.75", "Cab", "$14.00"} {
+		if !strings.Contains(html, want) {
+			t.Errorf("expected HTML to contain %q, got:\n%s", want, html)
+		}
+	}
+}
