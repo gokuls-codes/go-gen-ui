@@ -13,6 +13,7 @@ import (
 	"github.com/gokuls-codes/go-gen-ui/internal/ai"
 	"github.com/gokuls-codes/go-gen-ui/internal/expenses"
 	"github.com/gokuls-codes/go-gen-ui/internal/genui"
+	"github.com/gokuls-codes/go-gen-ui/internal/jev"
 	"github.com/gokuls-codes/go-gen-ui/internal/utils"
 	"github.com/gokuls-codes/go-gen-ui/internal/views/components"
 	"github.com/gokuls-codes/go-gen-ui/internal/views/pages"
@@ -25,19 +26,21 @@ import (
 const maxToolTurns = 5
 
 type Server struct {
-	addr     string
-	aiClient *ai.Client
-	expenses *expenses.Store
-	mu       sync.Mutex
-	messages map[string]string
+	addr      string
+	aiClient  *ai.Client
+	jevClient *jev.Client
+	expenses  *expenses.Store
+	mu        sync.Mutex
+	messages  map[string]string
 }
 
-func NewServer(addr string, aiClient *ai.Client, expenseStore *expenses.Store) *Server {
+func NewServer(addr string, aiClient *ai.Client, jevClient *jev.Client, expenseStore *expenses.Store) *Server {
 	return &Server{
-		addr:     addr,
-		aiClient: aiClient,
-		expenses: expenseStore,
-		messages: make(map[string]string),
+		addr:      addr,
+		aiClient:  aiClient,
+		jevClient: jevClient,
+		expenses:  expenseStore,
+		messages:  make(map[string]string),
 	}
 }
 
