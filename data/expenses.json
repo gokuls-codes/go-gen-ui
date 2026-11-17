@@ -159,6 +159,30 @@
       "description": "petrol",
       "createdAt": "2026-11-12T15:13:32.252567Z",
       "paymentModeId": "pm_upi"
+    },
+    {
+      "id": "exp_0062b639",
+      "categoryId": "cat_food",
+      "amount": 45,
+      "description": "Dinner with team - on Credit Card",
+      "createdAt": "2026-11-17T15:40:59.293735Z",
+      "paymentModeId": "pm_card"
+    },
+    {
+      "id": "exp_fc9c182e",
+      "categoryId": "cat_subs",
+      "amount": 15.99,
+      "description": "Netflix subscription renewed for",
+      "createdAt": "2026-11-17T15:41:20.955129Z",
+      "paymentModeId": "pm_card"
+    },
+    {
+      "id": "exp_0d6f722d",
+      "categoryId": "cat_groceries",
+      "amount": 5,
+      "description": "Bought groceries for 32.50 at Trader Joe's",
+      "createdAt": "2026-11-17T15:41:43.83587Z",
+      "paymentModeId": "pm_card"
     }
   ]
 }

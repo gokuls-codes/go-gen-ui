@@ -1,0 +1,267 @@
+package components
+
+import (
+	"fmt"
+)
+
+type JevProbability struct {
+	Option string
+	Prob   float64
+}
+
+type JevResultData struct {
+	State        string
+	QuestionType string
+	Instructions string
+	Choice       string
+	Confidence   float64
+	Probs        []JevProbability
+	Noul         *float64
+	Score        *float64
+	ScaleLevels  []string
+	InputTokens  int
+	OutputTokens int
+	ThreadID     string
+}
+
+templ JevPlayground(initialState, threadID string) {
+	<div class="jev-playground w-full bg-card text-card-foreground border border-border rounded-lg p-5 shadow-sm space-y-4">
+		<!-- Header -->
+		<div class="space-y-1 border-b border-border pb-3">
+			<div class="flex items-center justify-between">
+				<h3 class="text-base font-semibold leading-none tracking-tight">Jev Explorer</h3>
+				<span class="text-xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded">
+					jev-latest
+				</span>
+			</div>
+			<p class="text-xs text-muted-foreground">Evaluate typed questions against state</p>
+		</div>
+
+		<!-- Form -->
+		<form
+			hx-post="/jev/evaluate"
+			hx-target="closest .jev-playground"
+			hx-swap="outerHTML"
+			class="space-y-4"
+		>
+			<input type="hidden" name="thread_id" value={ threadID } />
+
+			<!-- State Input -->
+			<div class="space-y-1.5">
+				<label class="block text-xs font-medium text-muted-foreground">
+					State <span class="text-muted-foreground/70">(text or JSON)</span>
+				</label>
+				<textarea
+					name="state"
+					rows="3"
+					required
+					placeholder="Enter context, e.g. 'Our API started returning 500 errors on every request about 20 minutes ago.'"
+					class="w-full bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-ring font-mono leading-relaxed"
+				>{ initialState }</textarea>
+			</div>
+
+			<!-- Question Type & Instructions -->
+			<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+				<div class="space-y-1.5">
+					<label class="block text-xs font-medium text-muted-foreground">Question Type</label>
+					<select
+						name="question_type"
+						id="jev-qtype"
+						onchange="
+							const val = this.value;
+							document.getElementById('jev-box-choice').style.display = val === 'choice' ? 'block' : 'none';
+							document.getElementById('jev-box-score').style.display = val === 'score' ? 'block' : 'none';
+						"
+						class="w-full bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+					>
+						<option value="choice" selected>Choice</option>
+						<option value="noul">Noul (Yes / No)</option>
+						<option value="score">Score (Ordered Scale)</option>
+					</select>
+				</div>
+
+				<div class="sm:col-span-2 space-y-1.5">
+					<label class="block text-xs font-medium text-muted-foreground">Instructions</label>
+					<input
+						type="text"
+						name="instructions"
+						id="jev-instructions"
+						value="Which department should handle this?"
+						required
+						placeholder="e.g. Which department should handle this?"
+						class="w-full bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+					/>
+				</div>
+			</div>
+
+			<!-- Choice Criteria Box -->
+			<div id="jev-box-choice" class="space-y-1.5">
+				<label class="block text-xs font-medium text-muted-foreground">
+					Choices <span class="text-muted-foreground/70">(format: <code>key: description</code>)</span>
+				</label>
+				<textarea
+					name="choice_criteria"
+					rows="3"
+					class="w-full bg-background border border-input rounded-md px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-ring font-mono leading-relaxed"
+				>technical: Bugs, 500 errors, or integration problems&#10;billing: Payments, invoices, and charges&#10;sales: Pricing questions and new accounts</textarea>
+			</div>
+
+			<!-- Score Criteria Box (Hidden by default) -->
+			<div id="jev-box-score" class="space-y-1.5" style="display: none;">
+				<label class="block text-xs font-medium text-muted-foreground">
+					Scale Levels <span class="text-muted-foreground/70">(comma-separated from low to high)</span>
+				</label>
+				<input
+					type="text"
+					name="score_criteria"
+					value="Calm facts, Frustrated but civil, Very angry"
+					placeholder="Low priority, Normal priority, High urgency"
+					class="w-full bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+				/>
+			</div>
+
+			<!-- Submit Button -->
+			<div class="flex items-center justify-end pt-2">
+				<button
+					type="submit"
+					class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+				>
+					Evaluate
+				</button>
+			</div>
+		</form>
+	</div>
+}
+
+templ JevResult(d JevResultData) {
+	<div class="jev-playground w-full bg-card text-card-foreground border border-border rounded-lg p-5 shadow-sm space-y-4">
+		<!-- Header -->
+		<div class="flex items-start justify-between border-b border-border pb-3">
+			<div class="space-y-1">
+				<div class="flex items-center gap-2">
+					<h3 class="text-base font-semibold leading-none tracking-tight">Jev Evaluation</h3>
+					<span class="text-xs uppercase font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded">
+						{ d.QuestionType }
+					</span>
+				</div>
+				<p class="text-xs text-muted-foreground">{ d.Instructions }</p>
+			</div>
+			if d.InputTokens > 0 {
+				<span class="text-xs font-mono text-muted-foreground">
+					{ fmt.Sprintf("%d in / %d out", d.InputTokens, d.OutputTokens) }
+				</span>
+			}
+		</div>
+
+		<!-- State Context -->
+		<div class="bg-muted/40 border border-border rounded-md p-3 text-xs text-muted-foreground">
+			<span class="font-medium text-foreground">State:</span> "{ d.State }"
+		</div>
+
+		<!-- Answer Presentation -->
+		if d.QuestionType == "choice" {
+			<div class="border border-border rounded-md p-4 space-y-3">
+				<div class="flex items-center justify-between">
+					<div class="space-y-0.5">
+						<span class="text-xs text-muted-foreground uppercase font-medium">Selected Choice</span>
+						<div class="text-base font-semibold text-foreground">{ d.Choice }</div>
+					</div>
+					<div class="text-sm font-medium text-foreground">
+						{ fmt.Sprintf("%.0f%% confident", d.Confidence * 100) }
+					</div>
+				</div>
+
+				if len(d.Probs) > 0 {
+					<div class="space-y-2 pt-3 border-t border-border">
+						<span class="text-xs text-muted-foreground font-medium">Probability Distribution</span>
+						for _, p := range d.Probs {
+							<div class="space-y-1">
+								<div class="flex justify-between text-xs">
+									<span class={ templ.KV("font-medium text-foreground", p.Option == d.Choice), templ.KV("text-muted-foreground", p.Option != d.Choice) }>
+										{ p.Option }
+									</span>
+									<span class="font-mono text-muted-foreground">{ fmt.Sprintf("%.1f%%", p.Prob * 100) }</span>
+								</div>
+								<div class="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+									<div
+										class="bg-primary h-1.5 rounded-full transition-all"
+										style={ fmt.Sprintf("width: %.1f%%", p.Prob * 100) }
+									></div>
+								</div>
+							</div>
+						}
+					</div>
+				}
+			</div>
+		}
+
+		if d.QuestionType == "noul" {
+			<div class="border border-border rounded-md p-4 space-y-3">
+				<div class="flex items-baseline justify-between">
+					<span class="text-xs text-muted-foreground uppercase font-medium">Probability</span>
+					if d.Noul != nil {
+						<span class="text-sm font-medium text-foreground">
+							if *d.Noul >= 0.5 {
+								True ({ fmt.Sprintf("%.1f%%", *d.Noul * 100) })
+							} else {
+								False ({ fmt.Sprintf("%.1f%%", *d.Noul * 100) })
+							}
+						</span>
+					}
+				</div>
+				if d.Noul != nil {
+					<div class="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+						<div
+							class="bg-primary h-1.5 rounded-full transition-all"
+							style={ fmt.Sprintf("width: %.1f%%", *d.Noul * 100) }
+						></div>
+					</div>
+				}
+			</div>
+		}
+
+		if d.QuestionType == "score" {
+			<div class="border border-border rounded-md p-4 space-y-3">
+				<div class="flex items-baseline justify-between">
+					<span class="text-xs text-muted-foreground uppercase font-medium">Score</span>
+					if d.Score != nil {
+						<span class="text-sm font-semibold font-mono text-foreground">
+							{ fmt.Sprintf("%.2f", *d.Score) }
+						</span>
+					}
+				</div>
+				if d.Score != nil {
+					<div class="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+						<div
+							class="bg-primary h-1.5 rounded-full transition-all"
+							style={ fmt.Sprintf("width: %.1f%%", *d.Score * 100) }
+						></div>
+					</div>
+				}
+				if len(d.ScaleLevels) > 0 {
+					<div class="flex justify-between text-xs text-muted-foreground pt-1">
+						<span>{ d.ScaleLevels[0] }</span>
+						<span>{ d.ScaleLevels[len(d.ScaleLevels)-1] }</span>
+					</div>
+				}
+			</div>
+		}
+
+		<!-- Re-test Action Button -->
+		<form
+			hx-post="/jev/playground"
+			hx-target="closest .jev-playground"
+			hx-swap="outerHTML"
+			class="pt-1 flex justify-end"
+		>
+			<input type="hidden" name="state" value={ d.State } />
+			<input type="hidden" name="thread_id" value={ d.ThreadID } />
+			<button
+				type="submit"
+				class="text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+			>
+				Edit question with this state
+			</button>
+		</form>
+	</div>
+}

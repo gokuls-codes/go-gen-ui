@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"regexp"
+	"sort"
 	"strings"
 	"sync"
 
@@ -78,6 +80,8 @@ func (s *Server) Start() error {
 
 	e.POST("/chat/reply", s.handleChatReply)
 	e.POST("/actions/submit", s.handleActionSubmit)
+	e.POST("/jev/evaluate", s.handleJevEvaluate)
+	e.POST("/jev/playground", s.handleJevPlayground)
 
 	return e.Start(s.addr)
 }
@@ -99,7 +103,177 @@ func (s *Server) handleChatReply(c *echo.Context) error {
 		return c.NoContent(http.StatusNotFound)
 	}
 
+	trimmed := strings.TrimSpace(userMessage)
+	if strings.HasPrefix(strings.ToLower(trimmed), "@jev") {
+		initialState := strings.TrimSpace(trimmed[4:])
+		if initialState == "" {
+			initialState = "Our API started returning 500 errors on every request about 20 minutes ago, and we can't process any customer orders."
+		}
+		return utils.Render(c, http.StatusOK, components.JevPlayground(initialState, threadId))
+	}
+
 	return s.replyWithAI(c, threadId, userMessage)
+}
+
+func (s *Server) handleJevPlayground(c *echo.Context) error {
+	state := c.FormValue("state")
+	threadId := c.FormValue("thread_id")
+	if state == "" {
+		state = "Our API started returning 500 errors on every request about 20 minutes ago, and we can't process any customer orders."
+	}
+	return utils.Render(c, http.StatusOK, components.JevPlayground(state, threadId))
+}
+
+func (s *Server) handleJevEvaluate(c *echo.Context) error {
+	if s.jevClient == nil {
+		return utils.Render(c, http.StatusOK, components.ChatMessage("⚠️ Jev client is not initialized.", false))
+	}
+
+	stateStr := strings.TrimSpace(c.FormValue("state"))
+	qType := strings.TrimSpace(c.FormValue("question_type"))
+	instructions := strings.TrimSpace(c.FormValue("instructions"))
+	choiceCriteriaStr := c.FormValue("choice_criteria")
+	scoreCriteriaStr := c.FormValue("score_criteria")
+	threadId := c.FormValue("thread_id")
+
+	if stateStr == "" {
+		return utils.Render(c, http.StatusOK, components.ChatMessage("⚠️ Please provide state to evaluate.", false))
+	}
+	if instructions == "" {
+		instructions = "Evaluate this statement"
+	}
+
+	var stateData any = stateStr
+	var jsonVal any
+	if err := json.Unmarshal([]byte(stateStr), &jsonVal); err == nil {
+		stateData = jsonVal
+	}
+
+	var q jev.Question
+	var scaleLevels []string
+
+	switch qType {
+	case "noul":
+		q = jev.NewNoulQuestion(instructions)
+	case "score":
+		for _, part := range strings.Split(scoreCriteriaStr, ",") {
+			p := strings.TrimSpace(part)
+			if p != "" {
+				scaleLevels = append(scaleLevels, p)
+			}
+		}
+		if len(scaleLevels) == 0 {
+			scaleLevels = []string{"Low priority", "Normal priority", "High urgency"}
+		}
+		q = jev.NewScoreQuestion(instructions, scaleLevels)
+	default:
+		qType = "choice"
+		criteria := make(map[string]string)
+		for _, line := range strings.Split(choiceCriteriaStr, "\n") {
+			line = strings.TrimSpace(line)
+			if line == "" {
+				continue
+			}
+			parts := strings.SplitN(line, ":", 2)
+			if len(parts) == 1 {
+				parts = strings.SplitN(line, "=", 2)
+			}
+			if len(parts) == 2 {
+				k := strings.TrimSpace(parts[0])
+				v := strings.TrimSpace(parts[1])
+				if k != "" {
+					criteria[k] = v
+				}
+			} else {
+				criteria[line] = line
+			}
+		}
+		if len(criteria) == 0 {
+			criteria = map[string]string{
+				"option_a": "First candidate option",
+				"option_b": "Second candidate option",
+			}
+		}
+		q = jev.NewChoiceQuestion(instructions, criteria)
+	}
+
+	ctx := c.Request().Context()
+	res, err := s.jevClient.Evaluate(ctx, stateData, map[string]jev.Question{"q": q})
+	if err != nil {
+		log.Printf("jev evaluate error: %v", err)
+		return utils.Render(c, http.StatusOK, components.ChatMessage("⚠️ Jev evaluation error: "+err.Error(), false))
+	}
+
+	ans := res.Answers["q"]
+
+	var probs []components.JevProbability
+	for k, v := range ans.Probabilities {
+		probs = append(probs, components.JevProbability{Option: k, Prob: v})
+	}
+	sort.Slice(probs, func(i, j int) bool {
+		return probs[i].Prob > probs[j].Prob
+	})
+
+	result := components.JevResultData{
+		State:        stateStr,
+		QuestionType: qType,
+		Instructions: instructions,
+		Choice:       ans.Choice,
+		Confidence:   ans.Confidence,
+		Probs:        probs,
+		Noul:         ans.Noul,
+		Score:        ans.Score,
+		ScaleLevels:  scaleLevels,
+		InputTokens:  res.Usage.InputTokens,
+		OutputTokens: res.Usage.OutputTokens,
+		ThreadID:     threadId,
+	}
+
+	return utils.Render(c, http.StatusOK, components.JevResult(result))
+}
+
+func cleanDescription(s string, original string) string {
+	s = regexp.MustCompile(`(?i)\b(dollars?|bucks?)\b`).ReplaceAllString(s, "")
+	words := strings.Fields(s)
+	cleaned := strings.TrimSpace(strings.Trim(strings.Join(words, " "), "- :,"))
+	if cleaned == "" {
+		return original
+	}
+	return cleaned
+}
+
+func parseAmountAndDescription(query string) (string, string) {
+	// 1. Explicit currency or preposition: $45.50, $45, 45 dollars, 45 bucks, for 32.50, of 32.50
+	reExplicit := regexp.MustCompile(`(?i)(?:\$([0-9]+(?:\.[0-9]{1,2})?)|([0-9]+(?:\.[0-9]{1,2})?)\s*(?:dollars?|bucks?|\$)|(?:for|of|-)\s*([0-9]+(?:\.[0-9]{1,2})?))`)
+	if match := reExplicit.FindStringSubmatch(query); len(match) > 0 {
+		amount := match[1]
+		if amount == "" {
+			amount = match[2]
+		}
+		if amount == "" {
+			amount = match[3]
+		}
+		desc := reExplicit.ReplaceAllString(query, "")
+		return amount, cleanDescription(desc, query)
+	}
+
+	// 2. Any decimal amount (e.g. "Bought groceries 32.50 at Trader Joe's")
+	reDecimal := regexp.MustCompile(`\b([0-9]+\.[0-9]{1,2})\b`)
+	if match := reDecimal.FindStringSubmatch(query); len(match) > 0 {
+		amount := match[1]
+		desc := reDecimal.ReplaceAllString(query, "")
+		return amount, cleanDescription(desc, query)
+	}
+
+	// 3. Number at end of query (e.g. "Lunch 15")
+	reEnd := regexp.MustCompile(`(?i)(?:-|\s)+([0-9]+(?:\.[0-9]{1,2})?)\s*$`)
+	if match := reEnd.FindStringSubmatch(query); len(match) > 0 {
+		amount := match[1]
+		desc := query[:len(query)-len(match[0])]
+		return amount, cleanDescription(desc, query)
+	}
+
+	return "", strings.TrimSpace(query)
 }
 
 func (s *Server) handleActionSubmit(c *echo.Context) error {

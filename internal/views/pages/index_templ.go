@@ -40,14 +40,14 @@ func Index(threadId string) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"max-w-4xl mx-auto p-6 flex flex-col h-screen\"><h1 class=\"text-3xl font-bold mb-4\">Gen UI Playground</h1><div id=\"chat-messages\" class=\"flex-1 overflow-y-auto py-6 space-y-4\"><div class=\"bg-muted/50 border border-border p-4 rounded-lg text-sm text-muted-foreground\">Try asking:  <span class=\"text-foreground font-medium\">\"Summarize my expenses for the last month\"</span>,  <span class=\"text-foreground font-medium\">\"Show a category breakdown chart and recent expenses\"</span>, or  <span class=\"text-foreground font-medium\">\"I want to add an expense for lunch - $15\"</span>.</div></div><form id=\"chat-form\" hx-post=\"/chat\" hx-target=\"#chat-messages\" hx-swap=\"beforeend\" hx-on::after-request=\"this.reset()\" class=\"pt-4 flex gap-3\"><input id=\"thread-id\" type=\"hidden\" name=\"thread_id\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"max-w-4xl mx-auto p-6 flex flex-col h-screen\"><h1 class=\"text-3xl font-bold mb-4\">Gen UI Playground</h1><div id=\"chat-messages\" class=\"flex-1 overflow-y-auto py-6 space-y-4\"><div class=\"bg-muted/50 border border-border p-4 rounded-lg text-sm text-muted-foreground space-y-1\"><div>Try asking:  <span class=\"text-foreground font-medium\">\"Summarize my expenses for the last month\"</span>,  <span class=\"text-foreground font-medium\">\"Show a category breakdown chart and recent expenses\"</span>, or  <span class=\"text-foreground font-medium\">\"I want to add an expense for lunch - $15\"</span>.</div><div class=\"text-xs text-muted-foreground\">Try <span class=\"text-foreground font-mono font-medium\">&#64;jev</span> to open the Jev evaluation playground.</div></div></div><form id=\"chat-form\" hx-post=\"/chat\" hx-target=\"#chat-messages\" hx-swap=\"beforeend\" hx-on::after-request=\"this.reset()\" class=\"pt-4 flex gap-3\"><input id=\"thread-id\" type=\"hidden\" name=\"thread_id\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templruntime.NewAttributeExpression(threadId).Resolve(ctx)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/pages/index.templ`, Line: 24, Col: 85}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/pages/index.templ`, Line: 29, Col: 85}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var3)
 			if templ_7745c5c3_Err != nil {
